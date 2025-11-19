@@ -1,0 +1,20 @@
+# focus on ignoring local envs
+backend/.env
+frontend/.env
+
+# Node
+node_modules
+
+# Logs
+npm-debug.log*
+dist
+
+env.local
+*.local
+
+# VS Code
+.vscode
+.idea
+
+# System
+.DS_Store
