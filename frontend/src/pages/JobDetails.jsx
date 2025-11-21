@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Clock, Calendar, Building, Users, BookOpen, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  Calendar,
+  Building,
+  Users,
+  BookOpen,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +22,7 @@ export default function JobDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("description");
-  
-  // Mock profile completion check
+
   const profileComplete = false;
   const [jobDetails, setJobDetails] = useState(null);
   const [applicantCount, setApplicantCount] = useState(0);
@@ -21,18 +30,25 @@ export default function JobDetails() {
 
   React.useEffect(() => {
     let mounted = true;
+
     async function load() {
       setLoading(true);
       try {
         const { apiFetch } = await import("@/lib/api");
+
+        // Load job details
         const res = await apiFetch(`/job/get-job-by-id-student/${id}`);
         if (mounted) {
           setJobDetails(res?.job || null);
         }
-        // fetch applicant counts (requires auth)
+
+        // Load applicants count (if logged in)
         try {
           const applicants = await apiFetch(`/job/view-applicants/${id}`);
-          if (mounted) setApplicantCount(applicants?.count || applicants?.applicants?.length || 0);
+          if (mounted)
+            setApplicantCount(
+              applicants?.count || applicants?.applicants?.length || 0
+            );
         } catch (err) {}
       } catch (err) {
         console.error("Failed to load job details", err);
@@ -40,18 +56,19 @@ export default function JobDetails() {
         setLoading(false);
       }
     }
+
     if (id) load();
-    return () => { mounted = false };
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   const handleApply = () => {
     if (!profileComplete) {
-      // Navigate to dashboard with profile completion prompt
       alert("Redirecting to complete your profile...");
       navigate("/?complete-profile=true");
       return;
     }
-    // Handle application logic
     alert("Application submitted successfully!");
   };
 
@@ -84,35 +101,41 @@ export default function JobDetails() {
                       <Building className="h-8 w-8 text-primary" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold">{jobDetails?.job_title || 'Job Details'}</h1>
-                      <p className="text-lg text-muted-foreground">{jobDetails?.company_name}</p>
+                      <h1 className="text-2xl font-bold">
+                        {jobDetails?.job_title || "Job Details"}
+                      </h1>
+                      <p className="text-lg text-muted-foreground">
+                        {jobDetails?.company_name}
+                      </p>
                     </div>
                   </div>
-                  <Badge 
-                    variant="secondary"
-                    className={
-                      mockJobDetails.type === "Full-time" ? "bg-orange-100 text-orange-800 border-orange-200" :
-                      mockJobDetails.type === "Internship" ? "bg-blue-100 text-blue-800 border-blue-200" :
-                      "bg-green-100 text-green-800 border-green-200"
-                    }
-                  >
-                    {mockJobDetails.type}
+
+                  <Badge variant="secondary">
+                    {jobDetails?.type || "N/A"}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    <span>{mockJobDetails.location}</span>
+                    <span>{jobDetails?.location || "—"}</span>
                   </div>
+
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    <span>{mockJobDetails.experience}</span>
+                    <span>{jobDetails?.experience || "—"}</span>
                   </div>
+
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    <span>Apply by {jobDetails?.created_at ? new Date(jobDetails.created_at).toDateString() : '—'}</span>
+                    <span>
+                      Apply by{" "}
+                      {jobDetails?.created_at
+                        ? new Date(jobDetails.created_at).toDateString()
+                        : "—"}
+                    </span>
                   </div>
+
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Users className="h-4 w-4" />
                     <span>{applicantCount} applicants</span>
@@ -120,7 +143,7 @@ export default function JobDetails() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {(jobDetails?.skills || []).map((skill, i) => (
+                  {(jobDetails?.skills || []).map((skill) => (
                     <Badge key={skill} variant="outline">
                       {skill}
                     </Badge>
@@ -128,48 +151,51 @@ export default function JobDetails() {
                 </div>
 
                 <div className="text-lg font-semibold text-primary">
-                    {jobDetails?.stipend || '—'}
+                  {jobDetails?.stipend || "—"}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Tabbed Content */}
+            {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="description">Description</TabsTrigger>
-                <TabsTrigger value="responsibilities">Responsibilities</TabsTrigger>
+                <TabsTrigger value="responsibilities">
+                  Responsibilities
+                </TabsTrigger>
                 <TabsTrigger value="requirements">Requirements</TabsTrigger>
                 <TabsTrigger value="eligibility">Eligibility</TabsTrigger>
                 <TabsTrigger value="company">Company</TabsTrigger>
               </TabsList>
 
+              {/* Description */}
               <TabsContent value="description" className="mt-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Job Description</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose prose-sm max-w-none">
-                      <p className="whitespace-pre-line">{jobDetails?.job_description || 'No description provided.'}</p>
-                    </div>
-                    
+                    <p className="whitespace-pre-line">
+                      {jobDetails?.job_description ||
+                        "No description provided."}
+                    </p>
+
                     <Separator className="my-6" />
-                    
-                    <div>
-                      <h3 className="font-semibold mb-3">Benefits</h3>
-                      <ul className="space-y-2">
-                        {(jobDetails?.benefits || []).map((benefit, index) => (
-                          <li key={index} className="flex items-center space-x-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="text-sm">{benefit}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+
+                    <h3 className="font-semibold mb-3">Benefits</h3>
+                    <ul className="space-y-2">
+                      {(jobDetails?.benefits || []).map((b, i) => (
+                        <li key={i} className="flex items-center space-x-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span className="text-sm">{b}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </CardContent>
                 </Card>
               </TabsContent>
 
+              {/* Responsibilities */}
               <TabsContent value="responsibilities" className="mt-6">
                 <Card>
                   <CardHeader>
@@ -177,17 +203,23 @@ export default function JobDetails() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {(jobDetails?.responsibilities || []).map((responsibility, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                          <span className="text-sm">{responsibility}</span>
-                        </li>
-                      ))}
+                      {(jobDetails?.responsibilities || []).map(
+                        (r, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start space-x-2"
+                          >
+                            <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                            <span className="text-sm">{r}</span>
+                          </li>
+                        )
+                      )}
                     </ul>
                   </CardContent>
                 </Card>
               </TabsContent>
 
+              {/* Requirements */}
               <TabsContent value="requirements" className="mt-6">
                 <Card>
                   <CardHeader>
@@ -195,10 +227,13 @@ export default function JobDetails() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {(jobDetails?.requirements || []).map((requirement, index) => (
-                        <li key={index} className="flex items-start space-x-2">
+                      {(jobDetails?.requirements || []).map((req, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start space-x-2"
+                        >
                           <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm">{requirement}</span>
+                          <span className="text-sm">{req}</span>
                         </li>
                       ))}
                     </ul>
@@ -206,6 +241,7 @@ export default function JobDetails() {
                 </Card>
               </TabsContent>
 
+              {/* Eligibility */}
               <TabsContent value="eligibility" className="mt-6">
                 <Card>
                   <CardHeader>
@@ -213,8 +249,11 @@ export default function JobDetails() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {(jobDetails?.eligibility || []).map((criteria, index) => (
-                        <li key={index} className="flex items-start space-x-2">
+                      {(jobDetails?.eligibility || []).map((criteria, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start space-x-2"
+                        >
                           <BookOpen className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <span className="text-sm">{criteria}</span>
                         </li>
@@ -224,31 +263,56 @@ export default function JobDetails() {
                 </Card>
               </TabsContent>
 
+              {/* Company */}
               <TabsContent value="company" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>About {mockJobDetails.companyInfo.name}</CardTitle>
+                    <CardTitle>
+                      About {jobDetails?.companyInfo?.name || "Company"}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4 mb-6">
                       <div>
-                        <span className="text-sm text-muted-foreground">Founded</span>
-                        <p className="font-medium">{mockJobDetails.companyInfo.founded}</p>
+                        <span className="text-sm text-muted-foreground">
+                          Founded
+                        </span>
+                        <p className="font-medium">
+                          {jobDetails?.companyInfo?.founded || "—"}
+                        </p>
                       </div>
+
                       <div>
-                        <span className="text-sm text-muted-foreground">Company Size</span>
-                        <p className="font-medium">{mockJobDetails.companyInfo.size}</p>
+                        <span className="text-sm text-muted-foreground">
+                          Company Size
+                        </span>
+                        <p className="font-medium">
+                          {jobDetails?.companyInfo?.size || "—"}
+                        </p>
                       </div>
+
                       <div>
-                        <span className="text-sm text-muted-foreground">Industry</span>
-                        <p className="font-medium">{mockJobDetails.companyInfo.industry}</p>
+                        <span className="text-sm text-muted-foreground">
+                          Industry
+                        </span>
+                        <p className="font-medium">
+                          {jobDetails?.companyInfo?.industry || "—"}
+                        </p>
                       </div>
+
                       <div>
-                        <span className="text-sm text-muted-foreground">Website</span>
-                        <p className="font-medium text-primary">{mockJobDetails.companyInfo.website}</p>
+                        <span className="text-sm text-muted-foreground">
+                          Website
+                        </span>
+                        <p className="font-medium text-primary">
+                          {jobDetails?.companyInfo?.website || "—"}
+                        </p>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">{jobDetails?.company_about || 'No company details'}</p>
+
+                    <p className="text-sm text-muted-foreground">
+                      {jobDetails?.company_about || "No company details."}
+                    </p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -257,7 +321,7 @@ export default function JobDetails() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Apply Card */}
+            {/* Apply */}
             <Card>
               <CardContent className="p-6">
                 {!profileComplete && (
@@ -268,17 +332,19 @@ export default function JobDetails() {
                     </AlertDescription>
                   </Alert>
                 )}
-                
-                <Button 
+
+                <Button
                   onClick={handleApply}
                   className="w-full mb-4"
                   disabled={!profileComplete}
                 >
-                  {profileComplete ? "Apply Now" : "Complete Profile to Apply"}
+                  {profileComplete
+                    ? "Apply Now"
+                    : "Complete Profile to Apply"}
                 </Button>
-                
+
                 <div className="text-center text-sm text-muted-foreground">
-                  Posted {mockJobDetails.posted}
+                  Posted {jobDetails?.posted || "—"}
                 </div>
               </CardContent>
             </Card>
@@ -291,20 +357,37 @@ export default function JobDetails() {
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <span className="text-sm text-muted-foreground">Job Type</span>
-                    <p className="font-medium">{mockJobDetails.type}</p>
+                    <span className="text-sm text-muted-foreground">
+                      Job Type
+                    </span>
+                    <p className="font-medium">{jobDetails?.type || "—"}</p>
                   </div>
+
                   <div>
-                    <span className="text-sm text-muted-foreground">Experience Level</span>
-                    <p className="font-medium">{mockJobDetails.experience}</p>
+                    <span className="text-sm text-muted-foreground">
+                      Experience Level
+                    </span>
+                    <p className="font-medium">
+                      {jobDetails?.experience || "—"}
+                    </p>
                   </div>
+
                   <div>
-                    <span className="text-sm text-muted-foreground">Location</span>
-                    <p className="font-medium">{mockJobDetails.location}</p>
+                    <span className="text-sm text-muted-foreground">
+                      Location
+                    </span>
+                    <p className="font-medium">
+                      {jobDetails?.location || "—"}
+                    </p>
                   </div>
+
                   <div>
-                    <span className="text-sm text-muted-foreground">Application Deadline</span>
-                    <p className="font-medium">{mockJobDetails.applyBy}</p>
+                    <span className="text-sm text-muted-foreground">
+                      Application Deadline
+                    </span>
+                    <p className="font-medium">
+                      {jobDetails?.applyBy || "—"}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -318,13 +401,30 @@ export default function JobDetails() {
               <CardContent>
                 <div className="space-y-4">
                   {[
-                    { title: "React Developer", company: "StartupHub", type: "Internship" },
-                    { title: "Full Stack Developer", company: "WebCorp", type: "Full-time" },
-                    { title: "UI Developer", company: "DesignTech", type: "Contract" }
+                    {
+                      title: "React Developer",
+                      company: "StartupHub",
+                      type: "Internship",
+                    },
+                    {
+                      title: "Full Stack Developer",
+                      company: "WebCorp",
+                      type: "Full-time",
+                    },
+                    {
+                      title: "UI Developer",
+                      company: "DesignTech",
+                      type: "Contract",
+                    },
                   ].map((job, index) => (
-                    <div key={index} className="border rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors">
+                    <div
+                      key={index}
+                      className="border rounded-lg p-3 hover:bg-accent cursor-pointer transition-colors"
+                    >
                       <h4 className="font-medium text-sm">{job.title}</h4>
-                      <p className="text-xs text-muted-foreground">{job.company}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {job.company}
+                      </p>
                       <Badge variant="outline" className="text-xs mt-1">
                         {job.type}
                       </Badge>

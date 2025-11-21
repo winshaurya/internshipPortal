@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as AppToaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { AuthProvider } from "./contexts/AuthContext";
 
 /* ------------------ Admin module imports ------------------ */
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -49,55 +50,59 @@ export default function App() {
       <TooltipProvider>
         <AppToaster />
         <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* ---------- Student / Public routes ---------- */}
-            <Route path="/" element={<Index />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/jobs/:id" element={<JobDetails />} />
 
-            {/* ---------- Auth routes ---------- */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
+        {/* ✅ WRAPPED EVERYTHING INSIDE AuthProvider */}
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* ---------- Student / Public routes ---------- */}
+              <Route path="/" element={<Index />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<JobDetails />} />
 
-            {/* ✅ Added these two new routes */}
-            <Route path="/signup/student" element={<SignUp userType="student" />} />
-            <Route path="/signup/alumni" element={<SignUp userType="alumni" />} />
+              {/* ---------- Auth routes ---------- */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
 
-            <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/signup/student" element={<SignUp userType="student" />} />
+              <Route path="/signup/alumni" element={<SignUp userType="alumni" />} />
 
-            {/* ---------- Student dashboard & profile ---------- */}
-            <Route path="/dashboard" element={<StudentDashboard />} />
-            <Route path="/student/profile" element={<StudentProfile />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* ---------- Admin routes (nested) ---------- */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="companies" element={<CompaniesManagement />} />
-              <Route path="postings" element={<PostingsManagement />} />
-              <Route path="applications" element={<ApplicationsManagement />} />
-              <Route path="taxonomies" element={<TaxonomiesManagement />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="audit-logs" element={<AuditLogs />} />
-            </Route>
+              {/* ---------- Student dashboard & profile ---------- */}
+              <Route path="/dashboard" element={<StudentDashboard />} />
+              <Route path="/student/profile" element={<StudentProfile />} />
 
-            {/* ---------- Alumni routes (nested) ---------- */}
-            <Route path="/alumni" element={<AlumniLayout />}>
-              <Route index element={<AlumniIndex />} />
-              <Route path="postings" element={<PostingsPage />} />
-              <Route path="post-job" element={<PostJobPage />} />
-              <Route path="add-company" element={<AddCompany />} />
-              <Route path="company-profile" element={<CompanyProfilePage />} />
-              <Route path="edit-company-profile" element={<EditCompanyProfilePage />} />
-              <Route path="profile" element={<EditMyProfilePage />} />
-              <Route path="applications" element={<JobApplicantsPage />} />
-            </Route>
+              {/* ---------- Admin routes (nested) ---------- */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="companies" element={<CompaniesManagement />} />
+                <Route path="postings" element={<PostingsManagement />} />
+                <Route path="applications" element={<ApplicationsManagement />} />
+                <Route path="taxonomies" element={<TaxonomiesManagement />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="audit-logs" element={<AuditLogs />} />
+              </Route>
 
-            {/* ---------- Catch-all ---------- */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+              {/* ---------- Alumni routes (nested) ---------- */}
+              <Route path="/alumni" element={<AlumniLayout />}>
+                <Route index element={<AlumniIndex />} />
+                <Route path="postings" element={<PostingsPage />} />
+                <Route path="post-job" element={<PostJobPage />} />
+                <Route path="add-company" element={<AddCompany />} />
+                <Route path="company-profile" element={<CompanyProfilePage />} />
+                <Route path="edit-company-profile" element={<EditCompanyProfilePage />} />
+                <Route path="profile" element={<EditMyProfilePage />} />
+                <Route path="applications" element={<JobApplicantsPage />} />
+              </Route>
+
+              {/* ---------- Catch-all ---------- */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+
       </TooltipProvider>
     </QueryClientProvider>
   );
