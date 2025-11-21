@@ -36,6 +36,9 @@ import CompanyProfilePage from "./pages/CompanyProfilePage";
 import EditCompanyProfilePage from "./pages/EditCompanyProfilePage";
 import EditMyProfilePage from "./pages/EditMyProfilePage";
 import JobApplicantsPage from "./pages/JobApplicantsPage";
+import { ApplicantDetails } from "./components/alumni/ApplicantDetails";
+import { ExpiredPostings } from "./components/alumni/ExpiredPostings";
+import { CompaniesList } from "./components/alumni/CompaniesList";
 
 /* ------------------ Shared ------------------ */
 import NotFound from "./pages/NotFound";
@@ -92,6 +95,9 @@ export default function App() {
               <Route path="edit-company-profile" element={<EditCompanyProfilePage />} />
               <Route path="profile" element={<EditMyProfilePage />} />
               <Route path="applications" element={<JobApplicantsPage />} />
+              <Route path="applicant-details" element={<ApplicantDetails />} />
+              <Route path="expired-postings" element={<ExpiredPostings />} />
+              <Route path="companies" element={<CompaniesList />} />
             </Route>
 
             {/* ---------- Catch-all ---------- */}
