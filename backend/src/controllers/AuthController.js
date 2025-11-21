@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
-const { SECRET_KEY, EXPIRES_IN } = require("../config/jwt");
+const SECRET_KEY = "your_jwt_secret";
 
 // ==================== REGISTER STUDENT ====================
 const registerStudent = async (req, res) => {
@@ -100,7 +100,7 @@ const login = async (req, res) => {
     { id: user.id, email: user.email, role: roleToAssign },
     SECRET_KEY,
     {
-      expiresIn: EXPIRES_IN,
+      expiresIn: "1h",
     }
   );
 
