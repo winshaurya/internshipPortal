@@ -375,7 +375,7 @@ export function AlumniSidebar({ className }) {
         </nav>
 
         {/* Settings */}
-        <div className="border-t border-sidebar-border p-3">
+        {/* <div className="border-t border-sidebar-border p-3">
           <NavLink
             to="/settings"
             className="group flex items-center rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -383,7 +383,7 @@ export function AlumniSidebar({ className }) {
             <Settings className="h-5 w-5 flex-shrink-0" />
             {!collapsed && <span className="ml-3">Settings</span>}
           </NavLink>
-        </div>
+        </div> */}
       </div>
     </div>
   );
