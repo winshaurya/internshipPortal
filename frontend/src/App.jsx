@@ -39,6 +39,7 @@ import JobApplicantsPage from "./pages/JobApplicantsPage";
 import { ApplicantDetails } from "./components/alumni/ApplicantDetails";
 import { ExpiredPostings } from "./components/alumni/ExpiredPostings";
 import { CompaniesList } from "./components/alumni/CompaniesList";
+import { ProfileView } from "./components/alumni/ProfileView";
 
 /* ------------------ Shared ------------------ */
 import NotFound from "./pages/NotFound";
@@ -98,6 +99,7 @@ export default function App() {
               <Route path="applicant-details" element={<ApplicantDetails />} />
               <Route path="expired-postings" element={<ExpiredPostings />} />
               <Route path="companies" element={<CompaniesList />} />
+              <Route path="profile-view" element={<ProfileView />} />
             </Route>
 
             {/* ---------- Catch-all ---------- */}
