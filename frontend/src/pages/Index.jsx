@@ -19,8 +19,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+// 🔥 Import Auth Context
+import { useAuth } from "@/contexts/AuthContext";
+
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // 🔥 Access user state + logout function
+  const { user, logout } = useAuth();
 
   const features = [
     {
@@ -51,10 +57,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      {/* ✅ Responsive Header */}
+      {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
@@ -67,55 +74,79 @@ const Index = () => {
 
             {/* Desktop Buttons */}
             <div className="hidden md:flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link to="/login">Sign In</Link>
-              </Button>
-              <Button variant="gradient" asChild>
-                <Link to="/signup">Get Started</Link>
-              </Button>
+              {user ? (
+                <>
+                  <span className="font-medium">Welcome, {user.name}</span>
+                  <Button variant="outline" onClick={logout}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link to="/login">Sign In</Link>
+                  </Button>
+                  <Button variant="gradient" asChild>
+                    <Link to="/signup">Get Started</Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-md hover:bg-accent/10 focus:outline-none"
+              className="md:hidden p-2 rounded-md hover:bg-accent/10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6 text-foreground" />
-              ) : (
-                <Menu className="h-6 w-6 text-foreground" />
-              )}
+              {mobileMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
         </div>
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-sm">
+          <div className="md:hidden border-t bg-background/95">
             <div className="px-4 py-3 flex flex-col gap-2">
-              <Button
-                variant="ghost"
-                asChild
-                className="w-full justify-start text-left"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Link to="/login">Sign In</Link>
-              </Button>
-              <Button
-                variant="gradient"
-                asChild
-                className="w-full justify-start text-left"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Link to="/signup">Get Started</Link>
-              </Button>
+
+              {user ? (
+                <>
+                  <p className="px-4 py-2 font-medium">Welcome, {user.name}</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link to="/login">Sign In</Link>
+                  </Button>
+
+                  <Button
+                    variant="gradient"
+                    asChild
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link to="/signup">Get Started</Link>
+                  </Button>
+                </>
+              )}
+
             </div>
           </div>
         )}
       </header>
 
-      {/* ✅ Hero Section */}
+      {/* Hero Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-3xl mx-auto">
@@ -127,11 +158,9 @@ const Index = () => {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Connect with alumni, discover exclusive job opportunities, and
-              accelerate your career with the power of our network.
+              Connect with alumni, discover exclusive job opportunities, and accelerate your career.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {/* 🎓 Updated Only These Two Links */}
               <Button variant="gradient" size="lg" asChild>
                 <Link to="/signup/student">
                   Join as Student
@@ -146,37 +175,28 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ✅ Features Section */}
+      {/* Features Section */}
       <section className="py-20 bg-background/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Why Choose SGSITS Alumni Portal?
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Built specifically for the SGSITS community to create meaningful
-              connections and career opportunities.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card
-                  key={index}
-                  className="text-center hover:shadow-lg transition-shadow"
-                >
+                <Card key={index} className="text-center hover:shadow-lg">
                   <CardHeader>
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg mx-auto mb-4 flex items-center justify-center">
                       <Icon className="w-6 h-6 text-primary" />
                     </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    <CardTitle>{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
+                    <CardDescription>{feature.description}</CardDescription>
                   </CardContent>
                 </Card>
               );
@@ -185,57 +205,18 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ✅ CTA Section */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Card className="shadow-elegant">
-            <CardHeader className="pb-8">
-              <CardTitle className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Start Your Journey?
-              </CardTitle>
-              <CardDescription className="text-lg">
-                Join thousands of SGSITS students and alumni who are already
-                building their careers through our platform.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="gradient" size="lg" asChild>
-                  <Link to="/signup/student">
-                    Create Account
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <Link to="/login">Sign In</Link>
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Free to join • Exclusive to SGSITS community • Secure and private
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* ✅ Footer */}
-      <footer className="bg-background border-t py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center gap-3 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold">
-                SGSITS Alumni Portal
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              © 2025 SGSITS Alumni Association. All rights reserved.
-            </div>
+      {/* Footer */}
+      <footer className="bg-background border-t py-12 mt-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between">
+            <span className="font-semibold">SGSITS Alumni Portal</span>
+            <span className="text-sm text-muted-foreground">
+              © 2025 All rights reserved.
+            </span>
           </div>
         </div>
       </footer>
+
     </div>
   );
 };

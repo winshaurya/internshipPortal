@@ -1,15 +1,31 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  GraduationCap,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, GraduationCap, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 
+// 🔥 Import Auth Context (Important)
+import { useAuth } from "@/contexts/AuthContext";
+
 const Login = () => {
+  const { login } = useAuth(); // 👈 Global state update
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -31,27 +47,33 @@ const Login = () => {
         password: formData.password,
       });
 
-      // Store token
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // 🔥 Update Global Auth State
+      login(response.user);
 
-      // Redirect based on user role
-      if (response.user.role === 'admin') {
-        toast({ title: "Welcome, Admin!", description: "Redirecting to Admin Dashboard", variant: "default" });
+      // 🗂 Save login data for refresh persistence
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      // ➡ Redirect based on Role
+      const role = response.user.role;
+      if (role === "admin") {
         navigate("/admin");
-      } else if (response.user.role === 'student') {
-        toast({ title: "Welcome back, Student!", description: "Redirecting to Student Dashboard", variant: "default" });
+      } else if (role === "student") {
         navigate("/dashboard");
-      } else if (response.user.role === 'alumni') {
-        toast({ title: "Welcome, Alumni!", description: "Redirecting to Alumni Dashboard", variant: "default" });
+      } else if (role === "alumni") {
         navigate("/alumni");
       }
 
+      toast({
+        title: "Login Successful 🎉",
+        description: `Welcome back ${response.user.name}!`,
+      });
+
     } catch (error) {
       toast({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials. Please try again.",
-        variant: "destructive"
+        title: "Login Failed ❌",
+        description: error.message || "Invalid credentials!",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -71,82 +93,92 @@ const Login = () => {
               <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your SGSITS Portal account</CardDescription>
+            <CardDescription>
+              Sign in to your SGSITS Portal account
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label>Email</Label>
                 <Input
-                  id="email"
                   type="email"
                   placeholder="Enter your email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("email", e.target.value)
+                  }
                   required
                 />
               </div>
 
+              {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label>Password</Label>
                 <div className="relative">
                   <Input
-                    id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>
 
+              {/* Remember Me */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id="rememberMe"
                     checked={formData.rememberMe}
-                    onCheckedChange={(checked) => handleInputChange("rememberMe", checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("rememberMe", checked)
+                    }
                   />
-                  <Label htmlFor="rememberMe" className="text-sm font-normal">Remember me</Label>
+                  <Label className="text-sm">Remember me</Label>
                 </div>
-                <Link to="/reset-password" className="text-sm text-primary hover:underline">Forgot password?</Link>
+                <Link className="text-sm text-primary">Forgot password?</Link>
               </div>
 
-              <Button type="submit" variant="gradient" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : <>Sign In <ArrowRight className="w-4 h-4 ml-2"/></>}
+              {/* Submit */}
+              <Button
+                type="submit"
+                variant="gradient"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : <>Sign In <ArrowRight /></>}
               </Button>
             </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t"/></div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Don't have an account?</span>
-              </div>
+            {/* Sign Up */}
+            <div className="text-center">
+              <span className="text-sm text-muted-foreground">
+                Don’t have an account?{" "}
+                <Link to="/signup" className="text-primary hover:underline">
+                  Sign Up
+                </Link>
+              </span>
             </div>
-
-            <Button variant="outline" className="w-full" asChild>
-              <Link to="/signup">Create new account</Link>
-            </Button>
           </CardContent>
         </Card>
-
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Need help accessing your account?{" "}
-            <Link to="/support" className="text-primary hover:underline">Contact Support</Link>
-          </p>
-        </div>
       </div>
     </div>
   );
