@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import {
   GraduationCap,
   Eye,
@@ -19,18 +20,16 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api";
-
-// 🔥 Import Auth Context (Important)
-import { useAuth } from "@/contexts/AuthContext";
+import { parseJwt } from "@/lib/api";
+import { useLoginMutation } from "@/store/services/authApi";
+import { setCredentials } from "@/store/slices/authSlice";
 
 const Login = () => {
-  const { login } = useAuth(); // 👈 Global state update
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  const { toast } = useToast();
+  const [login, { isLoading }] = useLoginMutation();
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -39,44 +38,50 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      const response = await apiClient.login({
+      const data = await login({
         email: formData.email,
-        password: formData.password,
-      });
+        password_hash: formData.password,
+      }).unwrap();
 
-      // 🔥 Update Global Auth State
-      login(response.user);
+      const decoded = parseJwt(data.token);
+      const userPayload = decoded
+        ? { id: decoded.id, email: decoded.email, role: decoded.role }
+        : null;
 
-      // 🗂 Save login data for refresh persistence
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      dispatch(
+        setCredentials({
+          token: data.token,
+          user: userPayload,
+          role: userPayload?.role,
+        })
+      );
 
-      // ➡ Redirect based on Role
-      const role = response.user.role;
+      const role = userPayload?.role;
       if (role === "admin") {
         navigate("/admin");
       } else if (role === "student") {
         navigate("/dashboard");
       } else if (role === "alumni") {
         navigate("/alumni");
+      } else {
+        navigate("/");
       }
 
       toast({
-        title: "Login Successful 🎉",
-        description: `Welcome back ${response.user.name}!`,
+        title: "Login Successful",
+        description: `Welcome back ${userPayload?.email || "user"}!`,
       });
-
     } catch (error) {
       toast({
-        title: "Login Failed ❌",
-        description: error.message || "Invalid credentials!",
+        title: "Login Failed",
+        description:
+          error?.data?.error ||
+          error?.data?.message ||
+          "Invalid credentials!",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

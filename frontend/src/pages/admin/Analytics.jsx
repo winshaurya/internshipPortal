@@ -30,9 +30,13 @@ import {
   Target,
   Activity
 } from "lucide-react";
-
-// Analytics state (driven from backend)
 import React from "react";
+import {
+  useSearchStudentsQuery,
+  useSearchAlumniQuery,
+  useAdminJobsQuery,
+  useLazyViewApplicantsForJobQuery,
+} from "@/store/services/adminApi";
 
 const nowMonth = (d) => new Date(d).toLocaleString(undefined, { month: 'short', year: 'numeric' });
 
@@ -48,23 +52,22 @@ export default function Analytics() {
   const [topPerformingJobs, setTopPerformingJobs] = React.useState([]);
   const [recentActivities, setRecentActivities] = React.useState([]);
 
+  const { data: studentsResp, isLoading: studentsLoading } = useSearchStudentsQuery({ limit: 1000 });
+  const { data: alumniResp, isLoading: alumniLoading } = useSearchAlumniQuery({ limit: 1000 });
+  const { data: jobsResp, isLoading: jobsLoading } = useAdminJobsQuery();
+  const [fetchApplicants] = useLazyViewApplicantsForJobQuery();
+
   React.useEffect(() => {
     let mounted = true;
     async function load() {
+      if (!studentsResp || !alumniResp || !jobsResp) return;
+      setLoading(true);
       try {
-        const { apiFetch } = await import("@/lib/api");
-
-        // Fetch students and alumni (includes created_at)
-        const studentsResp = await apiFetch(`/search/students?limit=1000`);
-        const alumniResp = await apiFetch(`/search/alumni?limit=1000`);
-
         const students = studentsResp?.data || [];
         const alumni = alumniResp?.data || [];
 
-        // Total users
         const totalUsers = students.length + alumni.length;
 
-        // Registrations per month (group)
         const regMap = {};
         for (const s of students) {
           const key = nowMonth(s.created_at || s.createdAt || new Date());
@@ -76,35 +79,34 @@ export default function Analytics() {
           regMap[key] = regMap[key] || { month: key, students: 0, alumni: 0 };
           regMap[key].alumni += 1;
         }
-
         const registration = Object.values(regMap).sort((a, b) => new Date(a.month) - new Date(b.month));
 
-        // Company distribution by industry using alumni+company
         const industryMap = {};
         for (const a of alumni) {
           if (a.industry) industryMap[a.industry] = (industryMap[a.industry] || 0) + 1;
         }
-        const companyChart = Object.entries(industryMap).map(([name, value], i) => ({ name, value, color: ["#8884d8","#82ca9d","#ffc658","#ff7300","#00ff88"][i % 5] }));
+        const companyChart = Object.entries(industryMap).map(([name, value], i) => ({
+          name,
+          value,
+          color: ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#00ff88"][i % 5],
+        }));
 
-        // Jobs and top performing jobs
-        const jobsResp = await apiFetch(`/admin/jobs`);
         const jobs = jobsResp || [];
 
-        // For each job, fetch applicants and compute counts
         let totalApplications = 0;
-        const applicantFreq = {}; // date -> count
+        const applicantFreq = {};
         const jobApplicants = [];
         const uniqueUserIds = new Set();
 
         for (const job of jobs) {
           try {
-            const viewRes = await apiFetch(`/job/view-applicants/${job.job_id}`);
+            const viewRes = await fetchApplicants(job.job_id).unwrap();
             const applicants = viewRes?.applicants || [];
             totalApplications += applicants.length;
             jobApplicants.push({ id: job.job_id, title: job.job_title, company: job.company_name, applications: applicants.length });
 
             for (const ap of applicants) {
-              const key = new Date(ap.applied_at).toISOString().split('T')[0];
+              const key = new Date(ap.applied_at).toISOString().split("T")[0];
               applicantFreq[key] = (applicantFreq[key] || 0) + 1;
               uniqueUserIds.add(ap.student_user_id || ap.user_id || ap.student_userId || ap.userId);
             }
@@ -113,39 +115,36 @@ export default function Analytics() {
           }
         }
 
-        // Top performing jobs
         jobApplicants.sort((a, b) => b.applications - a.applications);
 
-        // Weekly chart - last 7 days
         const last7 = [];
         for (let i = 6; i >= 0; i--) {
           const d = new Date();
           d.setDate(d.getDate() - i);
-          const key = d.toISOString().split('T')[0];
-          last7.push({ day: d.toLocaleDateString(undefined, { weekday: 'short' }), applications: applicantFreq[key] || 0 });
+          const key = d.toISOString().split("T")[0];
+          last7.push({ day: d.toLocaleDateString(undefined, { weekday: "short" }), applications: applicantFreq[key] || 0 });
         }
 
-        // engagement: monthly aggregated applications
         const monthly = {};
         for (const [date, c] of Object.entries(applicantFreq)) {
-          const month = new Date(date).toLocaleString(undefined,{month:'short',year:'numeric'});
+          const month = new Date(date).toLocaleString(undefined, { month: "short", year: "numeric" });
           monthly[month] = (monthly[month] || 0) + c;
         }
-        const engagement = Object.entries(monthly).map(([date, count]) => ({ date, pageViews: count, uniqueVisitors: count })).sort((a,b) => new Date(a.date)-new Date(b.date));
+        const engagement = Object.entries(monthly)
+          .map(([date, count]) => ({ date, pageViews: count, uniqueVisitors: count }))
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        // Unique applicants
-        const uniqueApplicants = new Set();
-        for (const job of jobApplicants) {
-          // not easily available; we can compute from applicants data earlier but we didn't store per user id; re-query all jobs
-        }
-
-        // Fetch recent activities from new jobs and new alumni
         const recent = [];
-        for (const job of jobs.slice(0,5)) {
-          recent.push({ time: job.job_created_at || job.created_at, action: 'New job posting', details: `${job.job_title} at ${job.company_name}`, type: 'job' });
+        for (const job of jobs.slice(0, 5)) {
+          recent.push({
+            time: job.job_created_at || job.created_at,
+            action: "New job posting",
+            details: `${job.job_title} at ${job.company_name}`,
+            type: "job",
+          });
         }
-        for (const a of alumni.slice(0,5)) {
-          recent.push({ time: a.created_at, action: 'Alumni registration', details: `${a.name} (${a.grad_year})`, type: 'user' });
+        for (const a of alumni.slice(0, 5)) {
+          recent.push({ time: a.created_at, action: "Alumni registration", details: `${a.name} (${a.grad_year})`, type: "user" });
         }
 
         if (!mounted) return;
@@ -154,19 +153,19 @@ export default function Analytics() {
         setRegistrationData(registration);
         setCompanyData(companyChart);
         setJobApplicationData(last7);
-        setTopPerformingJobs(jobApplicants.slice(0,5));
+        setTopPerformingJobs(jobApplicants.slice(0, 5));
         setEngagementData(engagement);
         setRecentActivities(recent);
       } catch (err) {
         console.error("Analytics load error", err);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     }
 
     load();
     return () => { mounted = false; };
-  }, []);
+  }, [studentsResp, alumniResp, jobsResp, fetchApplicants]);
   const exportAnalytics = () => {
     const csvRows = [
       ["Metric", "Value", "Period"],

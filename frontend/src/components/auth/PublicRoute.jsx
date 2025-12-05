@@ -1,13 +1,14 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSelector } from "react-redux";
 
 export default function PublicRoute({ children }) {
-  const { user } = useAuth();
+  const { token, user, role } = useSelector((state) => state.auth);
+  const resolvedRole = role || user?.role;
 
-  if (user) {
-    if (user.role === "admin") return <Navigate to="/admin" replace />;
-    if (user.role === "student") return <Navigate to="/dashboard" replace />;
-    if (user.role === "alumni") return <Navigate to="/alumni" replace />;
+  if (token && resolvedRole) {
+    if (resolvedRole === "admin") return <Navigate to="/admin" replace />;
+    if (resolvedRole === "student") return <Navigate to="/dashboard" replace />;
+    if (resolvedRole === "alumni") return <Navigate to="/alumni" replace />;
   }
 
   return children;

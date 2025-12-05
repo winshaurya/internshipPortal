@@ -1,15 +1,22 @@
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5004/api";
+const TOKEN_KEY = "token";
+const LEGACY_TOKEN_KEY = "api_token";
 
 // ---------------------------
 // Token Helpers
 // ---------------------------
 export function setToken(token) {
-  if (token) localStorage.setItem("api_token", token);
-  else localStorage.removeItem("api_token");
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
+  }
 }
 
 export function getToken() {
-  return localStorage.getItem("api_token");
+  return localStorage.getItem(TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY);
 }
 
 // ---------------------------

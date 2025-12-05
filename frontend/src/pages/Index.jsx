@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
   GraduationCap,
   Users,
@@ -18,15 +19,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-// 🔥 Import Auth Context
-import { useAuth } from "@/contexts/AuthContext";
+import { logout as logoutAction } from "@/store/slices/authSlice";
 
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // 🔥 Access user state + logout function
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
+  const isAuthenticated = Boolean(token);
+  const displayName =
+    user?.name || user?.email?.split("@")[0] || "User";
+
+  const handleLogout = () => {
+    dispatch(logoutAction());
+    setMobileMenuOpen(false);
+  };
 
   const features = [
     {
@@ -74,10 +80,10 @@ const Index = () => {
 
             {/* Desktop Buttons */}
             <div className="hidden md:flex items-center gap-4">
-              {user ? (
+              {isAuthenticated ? (
                 <>
-                  <span className="font-medium">Welcome, {user.name}</span>
-                  <Button variant="outline" onClick={logout}>
+                  <span className="font-medium">Welcome, {displayName}</span>
+                  <Button variant="outline" onClick={handleLogout}>
                     Logout
                   </Button>
                 </>
@@ -108,16 +114,10 @@ const Index = () => {
           <div className="md:hidden border-t bg-background/95">
             <div className="px-4 py-3 flex flex-col gap-2">
 
-              {user ? (
+              {isAuthenticated ? (
                 <>
-                  <p className="px-4 py-2 font-medium">Welcome, {user.name}</p>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      logout();
-                      setMobileMenuOpen(false);
-                    }}
-                  >
+                  <p className="px-4 py-2 font-medium">Welcome, {displayName}</p>
+                  <Button variant="outline" onClick={handleLogout}>
                     Logout
                   </Button>
                 </>
@@ -211,7 +211,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row justify-between">
             <span className="font-semibold">SGSITS Alumni Portal</span>
             <span className="text-sm text-muted-foreground">
-              © 2025 All rights reserved.
+              Ac 2025 All rights reserved.
             </span>
           </div>
         </div>

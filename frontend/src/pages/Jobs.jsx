@@ -8,31 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import JobCard from "@/components/JobCard";
 import JobFilters from "@/components/JobFilters";
+import { useListJobsForStudentQuery } from "@/store/services/jobApi";
 
 export default function Jobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  React.useEffect(() => {
-    let mounted = true;
-    async function load() {
-      setLoading(true);
-      try {
-        const { apiFetch } = await import("@/lib/api");
-        const res = await apiFetch("/job/get-all-jobs-student", { method: "GET" });
-        if (mounted && res && res.jobs) setJobs(res.jobs);
-      } catch (err) {
-        console.error("Failed to load jobs", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-    return () => { mounted = false; };
-  }, []);
+  const { data, isLoading } = useListJobsForStudentQuery({});
+  const jobs = data?.jobs || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -127,16 +111,26 @@ export default function Jobs() {
 
             {/* Jobs Grid */}
             <div className="grid gap-6">
-              {jobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  id={job.id}
-                  title={job.title}
-                  company={job.company_name || job.company}
-                  location={job.location}
-                  type={job.type}
-                />
-              ))}
+              {isLoading && (
+                <div className="text-sm text-muted-foreground">Loading jobs...</div>
+              )}
+              {!isLoading &&
+                jobs
+                  .filter((job) =>
+                    searchQuery
+                      ? (job.title || job.job_title || "").toLowerCase().includes(searchQuery.toLowerCase())
+                      : true
+                  )
+                  .map((job) => (
+                    <JobCard
+                      key={job.id || job.job_id}
+                      id={job.id || job.job_id}
+                      title={job.title || job.job_title}
+                      company={job.company_name || job.company}
+                      location={job.location}
+                      type={job.type}
+                    />
+                  ))}
             </div>
           </div>
         </div>
