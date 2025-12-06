@@ -141,4 +141,35 @@ const addCompany = async (req, res) => {
   }
 };
 
-module.exports = { completeProfile, updateProfile, addCompany };
+const getResume = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Check if student exists
+    const student = await db("student_profiles")
+      .where({ user_id: studentId })
+      .select("id", "name", "resume_url")
+      .first();
+
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    if (!student.resume_url) {
+      return res.status(404).json({ error: "Resume not uploaded" });
+    }
+
+    // Return the URL of the resume
+    return res.json({
+      message: "Resume fetched successfully",
+      name: student.name,
+      resume_url: student.resume_url,
+    });
+
+  } catch (err) {
+    console.error("Get Resume Error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { completeProfile, updateProfile, addCompany, getResume };
