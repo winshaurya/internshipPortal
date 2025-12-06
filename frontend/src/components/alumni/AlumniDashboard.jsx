@@ -1,6 +1,6 @@
 import { Building2, Users, Briefcase, TrendingUp } from "lucide-react";
 import { MetricCard } from "./MetricCard";
-import { ApplicationChart } from "./ApplicationChart";
+//import { ApplicationChart } from "./ApplicationChart";
 import { TopApplicants } from "./TopApplicants";
 import { QuickAccess } from "./QuickAccess";
 import "../../alumni.css"; // Keep if you have other alumni-specific styles
@@ -50,9 +50,8 @@ const AlumniDashboard = () => {
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Chart and Applicants */}
+        {/* Applicants Only (Chart Removed) */}
         <div className="space-y-6 lg:col-span-2">
-          <ApplicationChart />
           <TopApplicants />
         </div>
 

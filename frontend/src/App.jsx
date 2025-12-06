@@ -5,10 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster as AppToaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 
-/* Protected & Public Route */
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import PublicRoute from "./components/auth/PublicRoute";
-
 /* ------------------ Admin module imports ------------------ */
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -44,7 +40,6 @@ import JobApplicantsPage from "./pages/JobApplicantsPage";
 /* ------------------ Shared ------------------ */
 import NotFound from "./pages/NotFound";
 
-
 const queryClient = new QueryClient();
 
 export default function App() {
@@ -62,56 +57,19 @@ export default function App() {
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetails />} />
 
-            {/* ---------- Auth Routes (with PublicRoute) ---------- */}
-            <Route path="/login" element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }/>
-            <Route path="/signup" element={
-              <PublicRoute>
-                <SignUp />
-              </PublicRoute>
-            }/>
-            <Route path="/signup/student" element={
-              <PublicRoute>
-                <SignUp userType="student" />
-              </PublicRoute>
-            }/>
-            <Route path="/signup/alumni" element={
-              <PublicRoute>
-                <SignUp userType="alumni" />
-              </PublicRoute>
-            }/>
+            {/* ---------- Auth Routes (NO PublicRoute wrapper) ---------- */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/signup/student" element={<SignUp userType="student" />} />
+            <Route path="/signup/alumni" element={<SignUp userType="alumni" />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* ---------- Student Protected Routes ---------- */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/student/profile"
-              element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <StudentProfile />
-                </ProtectedRoute>
-              }
-            />
+            {/* ---------- Student Routes (NO ProtectedRoute) ---------- */}
+            <Route path="/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/profile" element={<StudentProfile />} />
 
-            {/* ---------- Admin Protected Routes ---------- */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
+            {/* ---------- Admin Routes (NO ProtectedRoute) ---------- */}
+            <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="companies" element={<CompaniesManagement />} />
               <Route path="postings" element={<PostingsManagement />} />
@@ -122,15 +80,8 @@ export default function App() {
               <Route path="audit-logs" element={<AuditLogs />} />
             </Route>
 
-            {/* ---------- Alumni Protected Routes ---------- */}
-            <Route
-              path="/alumni"
-              element={
-                <ProtectedRoute allowedRoles={["alumni"]}>
-                  <AlumniLayout />
-                </ProtectedRoute>
-              }
-            >
+            {/* ---------- Alumni Routes (NO ProtectedRoute) ---------- */}
+            <Route path="/alumni" element={<AlumniLayout />}>
               <Route index element={<AlumniIndex />} />
               <Route path="postings" element={<PostingsPage />} />
               <Route path="post-job" element={<PostJobPage />} />

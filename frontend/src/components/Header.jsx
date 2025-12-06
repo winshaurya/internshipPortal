@@ -4,8 +4,6 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
-  const { user, logout, isAuthenticated } = useAuth();
-
   return (
     <header className="bg-primary text-primary-foreground p-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -22,33 +20,6 @@ export default function Header() {
               placeholder="Search jobs, companies..."
               className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/70 focus:bg-white/20"
             />
-          </div>
-        </div>
-
-        {/* Action Icons & Profile */}
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-            <Search className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 bg-red-500">
-            <MessageSquare className="h-5 w-5" />
-          </Button>
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/10"
-              onClick={logout}
-              title="Logout"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-          )}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center text-sm font-semibold">
-            {user ? user.email.charAt(0).toUpperCase() : "👤"}
           </div>
         </div>
       </div>

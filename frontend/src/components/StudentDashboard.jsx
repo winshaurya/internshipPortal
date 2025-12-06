@@ -1,8 +1,5 @@
 import { useState } from "react";
 import Header from "./Header";
-import SkillTrends from "./SkillTrends";
-import MarketShare from "./MarketShare";
-import PersonalizedTips from "./PersonalizedTips";
 import JobCard from "./JobCard";
 import ApplicationHistory from "./ApplicationHistory";
 import SettingsProfile from "./SettingsProfile";
@@ -21,7 +18,7 @@ const recommendedJobs = [
 export default function StudentDashboard() {
   const navigate = useNavigate();
 
-  // ✅ Profile data state
+  // Profile data
   const [profileData, setProfileData] = useState({
     resumeUploaded: true,
     experiences: ["Frontend Developer"],
@@ -29,7 +26,7 @@ export default function StudentDashboard() {
     summary: "",
   });
 
-  // Progress calculation
+  // Profile progress
   const progress =
     (profileData.resumeUploaded ? 25 : 0) +
     (profileData.experiences.length > 0 ? 25 : 0) +
@@ -41,11 +38,10 @@ export default function StudentDashboard() {
       <Header />
 
       <main className="max-w-7xl mx-auto p-6">
-        {/* 🔹 Profile Progress Section */}
+        {/* Profile Progress Section */}
         <div className="bg-white shadow rounded-lg p-6 mb-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Your Profile Progress</h2>
-            {/* ✅ Fixed navigation path */}
             <Button onClick={() => navigate("/student/profile")} className="bg-blue-500">
               Complete Profile
             </Button>
@@ -74,20 +70,10 @@ export default function StudentDashboard() {
             <div>
               <h3 className="font-medium mb-2">Tasks to Complete</h3>
               <ul className="space-y-2 text-sm">
-                <li>
-                  {profileData.resumeUploaded ? "✅" : "⭕"} Upload your resume
-                </li>
-                <li>
-                  {profileData.experiences.length > 0 ? "✅" : "⭕"} Fill out work
-                  experience
-                </li>
-                <li>
-                  {profileData.skills.length >= 3 ? "✅" : "⭕"} Add 3 key skills
-                </li>
-                <li>
-                  {profileData.summary ? "✅" : "⭕"} Write a professional
-                  summary
-                </li>
+                <li>{profileData.resumeUploaded ? "✅" : "⭕"} Upload your resume</li>
+                <li>{profileData.experiences.length > 0 ? "✅" : "⭕"} Fill out work experience</li>
+                <li>{profileData.skills.length >= 3 ? "✅" : "⭕"} Add 3 key skills</li>
+                <li>{profileData.summary ? "✅" : "⭕"} Write a professional summary</li>
               </ul>
             </div>
 
@@ -112,13 +98,6 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Analytics Section */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <SkillTrends />
-          <MarketShare />
-          <PersonalizedTips />
-        </div>
-
         {/* Recommended Jobs Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -127,6 +106,7 @@ export default function StudentDashboard() {
               View All Jobs
             </Button>
           </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recommendedJobs.map((job) => (
               <JobCard

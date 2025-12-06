@@ -73,4 +73,4 @@ export default function ProfileProgress({ profileData }) {
       </CardContent>
     </Card>
   );
-}
+} 
