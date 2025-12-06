@@ -9,7 +9,7 @@ const {
   isAlumni,
   isStudent,
 } = require("../middleware/authMiddleware");
-const resumeUpload = require("../config/resumeUpload");
+const resumeUpload = require("../middleware/resumeUpload");
 
 // ================== ALUMNI JOB ROUTES ==================
 
