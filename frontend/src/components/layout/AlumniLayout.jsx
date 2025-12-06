@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, Search, User } from "lucide-react";
 import { Outlet, useLocation } from "react-router-dom";
+import { ProfileView } from "../alumni/ProfileView";
+import { useNavigate } from "react-router-dom";
 
 export function AlumniLayout() {
   const location = useLocation();
-
+  const navigate = useNavigate();
   // ✅ Pages that have their own search bars
   const pagesWithOwnSearch = [
     "/alumni/postings",    // ActivePostings.jsx
@@ -54,9 +56,17 @@ export function AlumniLayout() {
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-2 text-foreground hover:text-primary-foreground"
+              className="relative text-foreground hover:text-primary-foreground"
+              onClick={() => navigate("/alumni/profile-view")}
             >
               <User className="h-5 w-5" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 text-foreground hover:text-primary-foreground"
+            >
               <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>

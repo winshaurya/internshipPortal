@@ -19,3 +19,4 @@ router.put("/connections/:id/reject", authenticate, connectionController.rejectR
 router.get("/connections", authenticate, connectionController.getConnections);
 
 module.exports = router;
+

@@ -1,6 +1,6 @@
 // src/middleware/authMiddleware.js
 const jwt = require("jsonwebtoken");
-const { SECRET_KEY } = require("../config/jwt");
+require("dotenv").config();
 
 const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -8,7 +8,7 @@ const authenticate = (req, res, next) => {
 
   try {
     // 👇 use the same secret string you used in the controller
-    const decoded = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
@@ -23,4 +23,18 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticate, isAdmin };
+const isAlumni = (req, res, next) => {
+  if (req.user.role !== "alumni") {
+    return res.status(403).json({ error: "Forbidden: Alumni only" });
+  }
+  next();
+};
+
+const isStudent = (req, res, next) => {
+  if (req.user.role !== "student") {
+    return res.status(403).json({ error: "Forbidden: Student only" });
+  }
+  next();
+};
+
+module.exports = { authenticate, isAdmin, isAlumni, isStudent };

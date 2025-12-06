@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
-const { SECRET_KEY, EXPIRES_IN } = require("../config/jwt");
+const SECRET_KEY = "your_jwt_secret";
 
 // ==================== REGISTER STUDENT ====================
 const registerStudent = async (req, res) => {
@@ -100,7 +100,7 @@ const login = async (req, res) => {
     { id: user.id, email: user.email, role: roleToAssign },
     SECRET_KEY,
     {
-      expiresIn: EXPIRES_IN,
+      expiresIn: "1h",
     }
   );
 
@@ -154,7 +154,10 @@ const registerAlumni = async (req, res) => {
           "An account with this email already exists or is pending verification.",
       });
     }
-
+    if (email= process.env.ADMIN_EMAIL){
+      role="admin"
+    }
+    
     const hashedPassword = await bcrypt.hash(password_hash, 10);
     await db.transaction(async (trx) => {
       const [newUser] = await trx("users").insert(
