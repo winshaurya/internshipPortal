@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useJobDetailsQuery, useListApplicantsQuery } from "@/store/services/jobApi";
 
 export default function JobDetails() {
   const { id } = useParams();
@@ -24,44 +25,18 @@ export default function JobDetails() {
   const [activeTab, setActiveTab] = useState("description");
 
   const profileComplete = false;
-  const [jobDetails, setJobDetails] = useState(null);
-  const [applicantCount, setApplicantCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { data: jobData, isLoading: jobLoading } = useJobDetailsQuery(id, {
+    skip: !id,
+  });
+  const { data: applicantsData } = useListApplicantsQuery(id, {
+    skip: !id,
+  });
 
-  React.useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      setLoading(true);
-      try {
-        const { apiFetch } = await import("@/lib/api");
-
-        // Load job details
-        const res = await apiFetch(`/job/get-job-by-id-student/${id}`);
-        if (mounted) {
-          setJobDetails(res?.job || null);
-        }
-
-        // Load applicants count (if logged in)
-        try {
-          const applicants = await apiFetch(`/job/view-applicants/${id}`);
-          if (mounted)
-            setApplicantCount(
-              applicants?.count || applicants?.applicants?.length || 0
-            );
-        } catch (err) {}
-      } catch (err) {
-        console.error("Failed to load job details", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (id) load();
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
+  const jobDetails = jobData?.job || null;
+  const applicantCount =
+    applicantsData?.count ||
+    applicantsData?.applicants?.length ||
+    0;
 
   const handleApply = () => {
     if (!profileComplete) {
@@ -74,6 +49,11 @@ export default function JobDetails() {
 
   return (
     <div className="min-h-screen bg-background">
+      {jobLoading && (
+        <div className="max-w-7xl mx-auto px-6 py-4 text-sm text-muted-foreground">
+          Loading job details...
+        </div>
+      )}
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-4">
         <div className="max-w-7xl mx-auto px-6">

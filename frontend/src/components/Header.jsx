@@ -1,15 +1,27 @@
 import { Search, Bell, MessageSquare, LogOut } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
+import { logout as logoutAction } from "@/store/slices/authSlice";
 
 export default function Header() {
+<<<<<<< HEAD
+=======
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
+  const isAuthenticated = Boolean(token);
+  const avatarInitial =
+    user?.name?.[0]?.toUpperCase() ||
+    user?.email?.[0]?.toUpperCase() ||
+    "?";
+
+>>>>>>> b13350bd45e60d51f0a7e9f0f7817915524a104c
   return (
     <header className="bg-primary text-primary-foreground p-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-2">
-          <div className="text-2xl font-bold">✨ logo</div>
+          <div className="text-2xl font-bold">logo</div>
         </div>
 
         {/* Search Bar */}
@@ -22,6 +34,36 @@ export default function Header() {
             />
           </div>
         </div>
+<<<<<<< HEAD
+=======
+
+        {/* Action Icons & Profile */}
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+            <Search className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+            <Bell className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 bg-red-500">
+            <MessageSquare className="h-5 w-5" />
+          </Button>
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/10"
+              onClick={() => dispatch(logoutAction())}
+              title="Logout"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center text-sm font-semibold">
+            {avatarInitial}
+          </div>
+        </div>
+>>>>>>> b13350bd45e60d51f0a7e9f0f7817915524a104c
       </div>
     </header>
   );

@@ -23,10 +23,13 @@ import {
   MapPin,
   Star
 } from "lucide-react";
+import { useGetProfileQuery, useUpdateProfileMutation } from "@/store/services/authApi";
 
 const StudentProfile = () => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { data: profileResponse, isLoading } = useGetProfileQuery();
+  const [updateProfile] = useUpdateProfileMutation();
 
   const [profileData, setProfileData] = useState({
     name: "",
@@ -52,31 +55,23 @@ const StudentProfile = () => {
   });
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const { apiFetch } = await import("@/lib/api");
-        const res = await apiFetch("/student/profile");
-        if (res) {
-          setProfileData(prev => ({
-            ...prev,
-            name: res.name || "",
-            email: res.email || "",
-            student_id: res.student_id || "",
-            branch: res.branch || "",
-            grad_year: res.grad_year || "",
-            skills: res.skills ? res.skills.split(",") : [],
-            experiences: res.experiences || [],
-            resumeUrl: res.resume_url || "",
-            resumeUploaded: !!res.resume_url,
-            resumeFileName: res.resume_url ? "Uploaded Resume" : "",
-          }));
-        }
-      } catch (err) {
-        console.error("Failed to load profile", err);
-      }
-    };
-    loadProfile();
-  }, []);
+    if (!profileResponse) return;
+    setProfileData((prev) => ({
+      ...prev,
+      name: profileResponse.name || "",
+      email: profileResponse.email || "",
+      student_id: profileResponse.student_id || "",
+      branch: profileResponse.branch || "",
+      grad_year: profileResponse.grad_year || "",
+      skills: profileResponse.skills
+        ? profileResponse.skills.split(",")
+        : [],
+      experiences: profileResponse.experiences || [],
+      resumeUrl: profileResponse.resume_url || "",
+      resumeUploaded: !!profileResponse.resume_url,
+      resumeFileName: profileResponse.resume_url ? "Uploaded Resume" : "",
+    }));
+  }, [profileResponse]);
 
   const profileSections = [
     { id: "personal", title: "Personal Information", description: "Add your basic details like name and contact info", completed: !!(profileData.name && profileData.student_id), weight: 20 },
@@ -108,9 +103,8 @@ const StudentProfile = () => {
   ];
 
   const handleSave = async () => {
-    setIsLoading(true);
+    setIsSaving(true);
     try {
-      const { apiFetch } = await import("@/lib/api");
       const dataToSend = {
         name: profileData.name,
         studentId: profileData.student_id,
@@ -120,15 +114,12 @@ const StudentProfile = () => {
         resumeUrl: profileData.resumeUrl || "",
         experiences: profileData.experiences,
       };
-      const res = await apiFetch("/student/profile", {
-        method: "PUT",
-        body: JSON.stringify(dataToSend),
-      });
+      await updateProfile(dataToSend).unwrap();
       toast({ title: "Profile updated!", description: "Your profile has been saved successfully." });
     } catch (err) {
       toast({ title: "Error", description: "Failed to save profile.", variant: "destructive" });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -387,8 +378,8 @@ const StudentProfile = () => {
             </Tabs>
 
             <div className="flex justify-end mt-4">
-              <Button variant="gradient" size="lg" onClick={handleSave} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Profile"}
+              <Button variant="gradient" size="lg" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Profile"}
               </Button>
             </div>
           </div>
